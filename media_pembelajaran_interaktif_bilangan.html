@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Pembelajaran Interaktif Bilangan - MI Al Huda Kota Gorontalo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Amiri (untuk Arab) -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        arabic: ['Amiri', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e6f4ea 100%);
+            min-height: 100vh;
+        }
+        .arabic-text {
+            font-family: 'Amiri', serif;
+            direction: rtl;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #059669;
+        }
+        /* Modal & Backdrop animation */
+        .modal-enter {
+            animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        /* Pulse glow for buttons */
+        .glow-btn {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+        }
+        .glow-btn:hover {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
+            transform: translateY(-2px);
+        }
+        @media print {
+            body {
+                background: white !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased flex flex-col min-h-screen">
+
+    <!-- APLIKASI CONTAINER -->
+    <div id="app" class="flex-1 flex flex-col w-full max-w-7xl mx-auto p-3 sm:p-5 md:p-6">
+
+        <!-- 1. SPLASH SCREEN -->
+        <div id="splash-screen" class="fixed inset-0 z-50 bg-emerald-900 flex flex-col items-center justify-center text-white transition-opacity duration-700">
+            <div class="text-center p-6 max-w-md">
+                <div class="w-24 h-24 mx-auto mb-6 bg-emerald-800 rounded-full flex items-center justify-center border-4 border-gold-400 shadow-2xl animate-bounce">
+                    <i class="fas fa-calculator text-4xl text-gold-400"></i>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-gold-400">Bilangan Sampai 50</h1>
+                <p class="text-emerald-200 text-sm sm:text-base mb-6">Media Pembelajaran Interaktif • MI Al Huda Kota Gorontalo</p>
+                <div class="w-48 h-2 bg-emerald-800 rounded-full mx-auto overflow-hidden">
+                    <div id="splash-progress" class="h-full bg-gold-400 w-0 transition-all duration-1000"></div>
+                </div>
+                <p class="text-xs text-emerald-300 mt-3 font-medium">Memuat Kurikulum Berbasis Cinta...</p>
+            </div>
+        </div>
+
+        <!-- NOTIFICATION / MESSAGE BOX (Custom replacement for alert) -->
+        <div id="custom-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl modal-enter text-center border-t-4 border-emerald-600">
+                <div id="modal-icon" class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto mb-4">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3 id="modal-title" class="text-xl font-bold text-slate-900 mb-2">Informasi</h3>
+                <p id="modal-message" class="text-slate-600 text-sm sm:text-base mb-6 leading-relaxed">Pesan sistem...</p>
+                <button onclick="closeCustomModal()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg transition duration-200">
+                    Mengerti & Lanjutkan
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. HALAMAN COVER UTAMA -->
+        <div id="view-cover" class="flex-1 flex flex-col justify-between hidden">
+            <!-- Kop / Header Sekolah -->
+            <header class="bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3 text-center sm:text-left">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                        <i class="fas fa-mosque"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-emerald-600">Kementerian Agama Republik Indonesia</h2>
+                        <h3 class="text-sm font-bold text-slate-800">Madrasah Ibtidaiyah (MI) Al Huda Kota Gorontalo</h3>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Kelas 1 Fase A</span>
+                    <span class="px-3 py-1 bg-gold-400 text-slate-900 text-xs font-bold rounded-full">Kurikulum Berbasis Cinta</span>
+                </div>
+            </header>
+
+            <!-- Hero Section & Animasi Cover -->
+            <main class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center my-auto py-6">
+                <div class="lg:col-span-7 text-center lg:text-left space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold shadow-sm">
+                        <i class="fas fa-heart text-rose-500"></i> Pembelajaran Bermakna & Cinta Kasih
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                        Media Pembelajaran <span class="text-emerald-600">Bilangan</span> 1 sampai 50
+                    </h1>
+                    <p class="text-slate-600 text-base sm:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                        Mengenal dan menulis bilangan cacah melalui penjelajahan alam Gorontalo, Danau Limboto, Teluk Tomini, dan nilai-nilai luhur Al-Qur'an.
+                    </p>
+                    
+                    <!-- Tombol Aksi Utama Cover -->
+                    <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
+                        <button onclick="openDeveloperModal()" class="px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
+                            <i class="fas fa-user-shield text-emerald-600"></i> Pengembang
+                        </button>
+                        <button onclick="openObjectivesModal()" class="px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
+                            <i class="fas fa-bullseye text-gold-500"></i> Tujuan Pembelajaran
+                        </button>
+                        <button onclick="showIdentityForm()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl glow-btn transition flex items-center gap-2 text-sm">
+                            <i class="fas fa-play"></i> MULAI BELAJAR
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ilustrasi SVG Interaktif Cover -->
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="relative w-full max-w-sm bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-3xl p-6 shadow-2xl text-white overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 opacity-20 text-9xl">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="relative z-10 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="bg-white/20 px-3 py-1 rounded-lg text-xs font-semibold backdrop-blur-md">Fase A • Matematika</span>
+                                <i class="fas fa-star text-gold-400 animate-spin" style="animation-duration: 8s;"></i>
+                            </div>
+                            <div class="py-6 text-center">
+                                <div class="inline-block p-4 bg-white/10 rounded-2xl backdrop-blur-md mb-3 border border-white/20">
+                                    <span class="text-5xl sm:text-6xl font-black text-gold-400">1 - 50</span>
+                                </div>
+                                <h4 class="text-lg font-bold">Intuisi Bilangan & Cacah</h4>
+                                <p class="text-xs text-emerald-100 mt-1">Eksplorasi Pesisir Tomini & Danau Limboto</p>
+                            </div>
+                            <div class="pt-2 border-t border-white/20 flex justify-between text-xs text-emerald-100">
+                                <span><i class="fas fa-map-marker-alt text-gold-400"></i> Gorontalo</span>
+                                <span><i class="fas fa-check-circle text-gold-400"></i> Interaktif</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer Cover -->
+            <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-200">
+                &copy; 2026 Lastry Zakaria • MI Al Huda Kota Gorontalo. Hak Cipta Dilindungi Undang-Undang.
+            </footer>
+        </div>
+
+        <!-- SLIDE MENGAMBANG: INFORMASI PENGEMBANG -->
+        <div id="modal-developer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl modal-enter relative border-t-4 border-emerald-600">
+                <button onclick="closeDeveloperModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="text-center">
+                    <div class="relative w-28 h-28 mx-auto mb-4">
+                        <img src="https://iili.io/CSAHRQ1.png" alt="Lastry Zakaria" class="w-full h-full object-cover rounded-full border-4 border-emerald-500 shadow-lg" onerror="this.onerror=null; this.src='https://placehold.co/150x150/10b981/ffffff?text=LZ';">
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900">Lastry Zakaria</h3>
+                    <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider mt-0.5">Pengembang MPI / Guru Kelas MI</p>
+                    <div class="mt-4 bg-slate-50 rounded-2xl p-4 text-left space-y-2.5 border border-slate-100 text-sm">
+                        <div class="flex items-center gap-3 text-slate-700">
+                            <i class="fas fa-school text-emerald-600 w-5 text-center"></i>
+                            <span class="font-medium">MI Al Huda Kota Gorontalo</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-700">
+                            <i class="fas fa-envelope text-emerald-600 w-5 text-center"></i>
+                            <span class="font-medium text-xs sm:text-sm">guru.madrasah@kemenag.go.id</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-700">
+                            <i class="fas fa-map-marker-alt text-emerald-600 w-5 text-center"></i>
+                            <span class="font-medium">Provinsi Gorontalo, Indonesia</span>
+                        </div>
+                    </div>
+                    <button onclick="closeDeveloperModal()" class="mt-6 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md transition">
+                        Kembali ke Cover
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE MENGAMBANG: TUJUAN PEMBELAJARAN & KBC -->
+        <div id="modal-objectives" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl modal-enter relative border-t-4 border-gold-500 max-h-[90vh] overflow-y-auto">
+                <button onclick="closeObjectivesModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-gold-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Tujuan Pembelajaran</h3>
+                            <p class="text-xs text-slate-500">Fase A • Kelas 1 Madrasah Ibtidaiyah</p>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 text-slate-700 text-sm leading-relaxed">
+                        <p class="font-semibold text-emerald-900 mb-1"><i class="fas fa-check-circle text-emerald-600"></i> Kompetensi Utama:</p>
+                        "Peserta didik mampu menunjukkan pemahaman dan memiliki intuisi bilangan serta menulis bilangan cacah sampai 50."
+                    </div>
+                    
+                    <div class="bg-amber-50 rounded-2xl p-4 border border-amber-100 text-slate-700 text-sm leading-relaxed space-y-2">
+                        <h4 class="font-bold text-amber-900 flex items-center gap-2">
+                            <i class="fas fa-heart text-rose-500"></i> Kurikulum Berbasis Cinta (KBC Kemenag RI)
+                        </h4>
+                        <p class="text-xs leading-relaxed">
+                            Mengintegrasikan kecintaan kepada Allah SWT sang pencipta alam, kasih sayang kepada sesama manusia, kepedulian terhadap kelestarian lingkungan pesisir Danau Limboto & Teluk Tomini, serta semangat moderasi dan cinta tanah air.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-slate-700 text-sm space-y-1">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Integrasi Ayat Al-Qur'an</span>
+                        <p class="arabic-text text-lg text-right font-bold text-slate-900">وَكُلَّ شَيْءٍ أَحْصَيْنَاهُ كِتَابًا</p>
+                        <p class="text-xs text-slate-600 italic">"Dan segala sesuatu telah Kami kumpulkan dalam Kitab catatan yang nyata." (QS. Yasin: 12)</p>
+                    </div>
+
+                    <button onclick="closeObjectivesModal()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md transition">
+                        Kembali ke Cover
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. FORM INPUT IDENTITAS SISWA -->
+        <div id="view-identity" class="flex-1 flex items-center justify-center hidden p-4">
+            <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-xl border border-emerald-100 modal-enter">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3 shadow-sm">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">Identitas Siswa</h2>
+                    <p class="text-slate-500 text-xs sm:text-sm mt-1">Masukkan nama dan kelas sebelum memulai petualangan belajar.</p>
+                </div>
+                
+                <form id="form-student" onsubmit="submitIdentity(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Nama Lengkap Siswa</label>
+                        <input type="text" id="input-name" required placeholder="Contoh: Ahmad Zaki" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 text-sm font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kelas / Rombel</label>
+                        <select id="input-class" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 text-sm font-medium">
+                            <option value="Kelas 1-A">Kelas 1-A (MI Al Huda)</option>
+                            <option value="Kelas 1-B">Kelas 1-B (MI Al Huda)</option>
+                            <option value="Kelas 1-C">Kelas 1-C (MI Al Huda)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg glow-btn transition flex items-center justify-center gap-2 text-sm mt-2">
+                        <span>Lanjut ke Panduan</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 3. HALAMAN PENGANTAR & PANDUAN PENGGUNA (BERBENTUK SLIDE) -->
+        <div id="view-guide" class="flex-1 flex flex-col justify-between hidden max-w-3xl mx-auto w-full py-4">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-100 flex-1 flex flex-col justify-between modal-enter">
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4">
+                        <div>
+                            <span id="guide-welcome-banner" class="text-xs font-bold uppercase tracking-wider text-emerald-600">Selamat Datang, Siswa Hebat!</span>
+                            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900" id="guide-title">Panduan Penggunaan Media</h2>
+                        </div>
+                        <span id="guide-step-indicator" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Slide 1 dari 3</span>
+                    </div>
+
+                    <!-- Slide Konten Panduan -->
+                    <div id="guide-content-box" class="space-y-4 py-2">
+                        <!-- Dinamis diisi JS -->
+                    </div>
+                </div>
+
+                <!-- Navigasi Slide Panduan -->
+                <div class="flex items-center justify-between pt-6 border-t border-slate-100 mt-6">
+                    <button id="btn-guide-prev" onclick="prevGuideSlide()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </button>
+                    <button id="btn-guide-next" onclick="nextGuideSlide()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-md transition flex items-center gap-2">
+                        <span>Selanjutnya</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button id="btn-guide-finish" onclick="enterDashboard()" class="px-6 py-2.5 bg-gold-500 hover:bg-gold-600 text-slate-900 rounded-xl font-bold text-sm shadow-md transition hidden items-center gap-2">
+                        <span>Masuk ke Menu Utama</span> <i class="fas fa-home"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. DASHBOARD / MENU UTAMA (TERKUNCI BERTAHAP) -->
+        <div id="view-dashboard" class="flex-1 flex flex-col justify-between hidden max-w-5xl mx-auto w-full py-4">
+            <!-- Header Dashboard -->
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-2xl shadow-md">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-emerald-600">Siswa Aktif Madrasah</span>
+                        <h3 id="dash-student-name" class="text-lg font-bold text-slate-900">Nama Siswa</h3>
+                        <p id="dash-student-class" class="text-xs text-slate-500">Kelas 1-A • MI Al Huda Kota Gorontalo</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden sm:block">
+                        <span class="text-xs text-slate-400 block">Status Belajar</span>
+                        <span id="dash-status-text" class="text-xs font-bold text-emerald-600">Tahap 1: Belajar</span>
+                    </div>
+                    <button onclick="resetApp()" title="Keluar / Ganti Akun" class="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition text-sm">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empat Kartu Menu Utama (Termasuk Referensi Buku Kemendikbud) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-auto py-4">
+                
+                <!-- Menu 1: BELAJAR -->
+                <div id="card-menu-belajar" onclick="openMenuBelajar()" class="bg-white rounded-3xl p-5 shadow-lg border-2 border-emerald-500 hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 bg-emerald-500 text-white px-3 py-1 rounded-bl-xl text-[10px] font-bold flex items-center gap-1">
+                        <i class="fas fa-unlock text-gold-400"></i> TERBUKA
+                    </div>
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mb-3 shadow-sm">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">1. BELAJAR</h3>
+                        <p class="text-slate-600 text-xs leading-relaxed">
+                            Jelajahi 5 slide materi mendalam bilangan cacah sampai 50.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span id="badge-belajar-status" class="text-[11px] font-bold text-emerald-600">Mulai Mempelajari</span>
+                        <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xs">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Menu 2: BERMAIN -->
+                <div id="card-menu-bermain" onclick="tryOpenMenuBermain()" class="bg-white rounded-3xl p-5 shadow-md border-2 border-slate-200 hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer relative overflow-hidden flex flex-col justify-between opacity-75">
+                    <div id="tag-bermain-lock" class="absolute top-0 right-0 bg-slate-700 text-white px-3 py-1 rounded-bl-xl text-[10px] font-bold flex items-center gap-1">
+                        <i class="fas fa-lock text-gold-400"></i> TERKUNCI 🔒
+                    </div>
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center text-2xl mb-3 shadow-sm" id="icon-bermain-bg">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">2. BERMAIN</h3>
+                        <p class="text-slate-600 text-xs leading-relaxed">
+                            10 tantangan interaktif gamifikasi literasi & numerasi.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span id="badge-bermain-status" class="text-[11px] font-bold text-slate-400">Selesaikan Belajar Dulu</span>
+                        <span id="icon-bermain-arrow" class="w-8 h-8 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center text-xs">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Menu 3: BERLATIH -->
+                <div id="card-menu-berlatih" onclick="tryOpenMenuBerlatih()" class="bg-white rounded-3xl p-5 shadow-md border-2 border-slate-200 hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer relative overflow-hidden flex flex-col justify-between opacity-75">
+                    <div id="tag-berlatih-lock" class="absolute top-0 right-0 bg-slate-700 text-white px-3 py-1 rounded-bl-xl text-[10px] font-bold flex items-center gap-1">
+                        <i class="fas fa-lock text-gold-400"></i> TERKUNCI 🔒
+                    </div>
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center text-2xl mb-3 shadow-sm" id="icon-berlatih-bg">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">3. BERLATIH</h3>
+                        <p class="text-slate-600 text-xs leading-relaxed">
+                            10 soal asesmen formal berjenjang level 1, 2, HOTS.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span id="badge-berlatih-status" class="text-[11px] font-bold text-slate-400">Selesaikan Bermain Dulu</span>
+                        <span id="icon-berlatih-arrow" class="w-8 h-8 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center text-xs">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Menu 4: REFERENSI BUKU KEMENDIKBUD (SELALU TERBUKA) -->
+                <div onclick="openMenuReferensi()" class="bg-white rounded-3xl p-5 shadow-lg border-2 border-amber-500 hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1 rounded-bl-xl text-[10px] font-bold flex items-center gap-1">
+                        <i class="fas fa-book text-slate-900"></i> REFERENSI
+                    </div>
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-2xl mb-3 shadow-sm">
+                            <i class="fas fa-bookmark"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">4. BUKU SUMBER</h3>
+                        <p class="text-slate-600 text-xs leading-relaxed">
+                            Referensi Buku Matematika Kelas 1 Kurikulum Merdeka Kemendikbudristek.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-[11px] font-bold text-amber-700">Lihat Referensi Buku</span>
+                        <span class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xs">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Dashboard -->
+            <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-200 flex justify-between items-center">
+                <span>Pengembang: Lastry Zakaria (MI Al Huda Kota Gorontalo)</span>
+                <button onclick="showReportDirect()" class="text-emerald-600 hover:underline font-bold">
+                    <i class="fas fa-file-pdf"></i> Lihat Laporan Hasil Belajar
+                </button>
+            </footer>
+        </div>
+
+        <!-- 5. LAYER MENU 1: BELAJAR (5 SLIDE MATERI MENDALAM) -->
+        <div id="view-belajar" class="flex-1 flex flex-col justify-between hidden max-w-4xl mx-auto w-full py-4">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-100 flex-1 flex flex-col justify-between modal-enter">
+                <div>
+                    <!-- Header Materi -->
+                    <div class="flex items-center justify-between border-b pb-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <button onclick="backToDashboard()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Menu 1: Belajar Materi Mendalam</span>
+                                <h2 id="materi-title-top" class="text-lg sm:text-xl font-bold text-slate-900">Judul Slide</h2>
+                            </div>
+                        </div>
+                        <span id="materi-counter" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Slide 1 / 5</span>
+                    </div>
+
+                    <!-- Konten Materi Utama (4 Komponen Wajib) -->
+                    <div id="materi-body-content" class="space-y-6">
+                        <!-- Diisi secara dinamis oleh JS -->
+                    </div>
+                </div>
+
+                <!-- Navigasi Materi & Tantangan Pemantik -->
+                <div class="pt-6 border-t border-slate-100 mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <button onclick="prevMateriSlide()" id="btn-materi-prev" class="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Sebelumnya
+                    </button>
+                    
+                    <div id="materi-quiz-status" class="text-xs font-bold text-amber-600 bg-amber-50 px-4 py-2 rounded-xl border border-amber-200">
+                        ⚠️ Selesaikan tantangan pemantik di atas untuk lanjut!
+                    </div>
+
+                    <button onclick="nextMateriSlide()" id="btn-materi-next" disabled class="w-full sm:w-auto px-6 py-2.5 bg-slate-300 text-slate-500 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 cursor-not-allowed">
+                        <span>Selanjutnya</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. LAYER MENU 2: BERMAIN (10 TANTANGAN GAMIFIKASI) -->
+        <div id="view-bermain" class="flex-1 flex flex-col justify-between hidden max-w-4xl mx-auto w-full py-4">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-100 flex-1 flex flex-col justify-between modal-enter">
+                <div>
+                    <!-- Header Bermain -->
+                    <div class="flex items-center justify-between border-b pb-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <button onclick="backToDashboard()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Menu 2: Bermain & Eksplorasi</span>
+                                <h2 class="text-lg sm:text-xl font-bold text-slate-900">Tantangan Literasi & Numerasi</h2>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="bermain-score-badge" class="px-3 py-1 bg-gold-400 text-slate-900 text-xs font-bold rounded-full">Skor: 0</span>
+                            <span id="bermain-counter" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Soal 1 / 10</span>
+                        </div>
+                    </div>
+
+                    <!-- Konten Tantangan Bermain -->
+                    <div id="bermain-content-box" class="space-y-6">
+                        <!-- Diisi dinamis oleh JS -->
+                    </div>
+                </div>
+
+                <!-- Tombol Submit / Lanjut Bermain -->
+                <div class="pt-6 border-t border-slate-100 mt-6 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-medium">Konteks Wilayah: Pesisir Teluk Tomini & Danau Limboto</span>
+                    <button id="btn-bermain-submit" onclick="submitBermainAnswer()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2 text-sm">
+                        <span>Periksa Jawaban</span> <i class="fas fa-check"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. LAYER MENU 3: BERLATIH (10 SOAL ASESMEN BERJENJANG) -->
+        <div id="view-berlatih" class="flex-1 flex flex-col justify-between hidden max-w-4xl mx-auto w-full py-4">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-100 flex-1 flex flex-col justify-between modal-enter">
+                <div>
+                    <!-- Header Berlatih -->
+                    <div class="flex items-center justify-between border-b pb-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <button onclick="backToDashboard()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Menu 3: Berlatih Asesmen Formal</span>
+                                <h2 id="berlatih-level-title" class="text-lg sm:text-xl font-bold text-slate-900">Level 1 - Dasar / Pemahaman</h2>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="berlatih-badge-level" class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">Level 1 (@8 Poin)</span>
+                            <span id="berlatih-counter" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Soal 1 / 10</span>
+                        </div>
+                    </div>
+
+                    <!-- Konten Soal Asesmen -->
+                    <div id="berlatih-content-box" class="space-y-6">
+                        <!-- Diisi dinamis oleh JS -->
+                    </div>
+                </div>
+
+                <!-- Tombol Navigasi Asesmen -->
+                <div class="pt-6 border-t border-slate-100 mt-6 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-medium">Penilaian Formal (Total 100 Poin)</span>
+                    <button id="btn-berlatih-submit" onclick="submitBerlatihAnswer()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-2 text-sm">
+                        <span>Jawab & Lanjut</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. LAPORAN HASIL BELAJAR PDF OTOMATIS -->
+        <div id="view-report" class="flex-1 flex flex-col justify-between hidden max-w-4xl mx-auto w-full py-4">
+            <div id="report-printable-area" class="bg-white rounded-3xl p-6 sm:p-10 shadow-xl border border-emerald-100 flex-1 flex flex-col justify-between modal-enter space-y-6">
+                <!-- Kop Laporan -->
+                <div>
+                    <div class="flex items-center justify-between border-b-2 border-emerald-600 pb-6 mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-3xl shadow-md">
+                                <i class="fas fa-mosque"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-600">Kementerian Agama Republik Indonesia</h2>
+                                <h1 class="text-xl sm:text-2xl font-black text-slate-900">Laporan Hasil Belajar Siswa (MPI)</h1>
+                                <p class="text-xs text-slate-500">Madrasah Ibtidaiyah (MI) Al Huda Kota Gorontalo</p>
+                            </div>
+                        </div>
+                        <div class="text-right hidden sm:block">
+                            <span class="text-xs font-bold text-slate-400 block">Tanggal Cetak</span>
+                            <span id="report-print-date" class="text-sm font-bold text-slate-800">28 Oktober 2026</span>
+                        </div>
+                    </div>
+
+        <!-- 9. LAYER MENU 4: REFERENSI BUKU MATEMATIKA KELAS 1 KEMENDIKBUD -->
+        <div id="view-referensi" class="flex-1 flex flex-col justify-between hidden max-w-4xl mx-auto w-full py-4">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-amber-200 flex-1 flex flex-col justify-between modal-enter">
+                <div>
+                    <!-- Header Referensi Buku -->
+                    <div class="flex items-center justify-between border-b pb-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <button onclick="backToDashboard()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Menu 4: Referensi Buku Utama</span>
+                                <h2 class="text-lg sm:text-xl font-bold text-slate-900">Buku Matematika Kelas 1 Kurikulum Merdeka Kemendikbud</h2>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">Pusat Kurikulum & Perbukuan</span>
+                    </div>
+
+                    <!-- Daftar Buku Referensi -->
+                    <div class="space-y-6">
+                        <div class="bg-amber-50 rounded-2xl p-4 border border-amber-100 text-slate-700 text-sm leading-relaxed flex items-start gap-3">
+                            <i class="fas fa-info-circle text-amber-600 text-xl mt-0.5"></i>
+                            <div>
+                                <h4 class="font-bold text-amber-900">Standar Kurikulum Nasional & Madrasah</h4>
+                                <p class="text-xs sm:text-sm text-slate-600 mt-0.5">Media Pembelajaran Interaktif (MPI) ini disusun merujuk pada Capaian Pembelajaran Fase A mata pelajaran Matematika kelas 1 Sekolah Dasar / Madrasah Ibtidaiyah yang diterbitkan oleh Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi Republik Indonesia serta diselaraskan dengan Kurikulum Berbasis Cinta Kemenag RI.</p>
+                            </div>
+                        </div>
+
+                        <!-- Grid Buku -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            
+                            <!-- Buku 1 -->
+                            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex gap-4 items-center shadow-sm">
+                                <div class="w-24 h-32 bg-emerald-700 rounded-xl flex-shrink-0 flex flex-col items-center justify-center text-white p-2 text-center shadow-md relative overflow-hidden border-2 border-gold-400">
+                                    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px]"></div>
+                                    <i class="fas fa-book-open text-2xl text-gold-400 mb-1"></i>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-gold-300">Matematika</span>
+                                    <span class="text-xs font-extrabold mt-1">Kelas 1 SD/MI</span>
+                                    <span class="text-[9px] text-emerald-200 mt-1">Jilid 1</span>
+                                </div>
+                                <div class="space-y-1.5 flex-1">
+                                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-md">Buku Siswa Utama</span>
+                                    <h4 class="font-bold text-slate-900 text-sm sm:text-base">Matematika untuk SD/MI Kelas I</h4>
+                                    <p class="text-xs text-slate-500">Penulis: Dara Lestari & Tim Puskurbuk</p>
+                                    <p class="text-xs text-slate-600">Fokus: Bilangan Cacah sampai 50, Penjumlahan & Pengurangan.</p>
+                                    <div class="pt-1">
+                                        <span class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                                            <i class="fas fa-check-circle"></i> Resmi Kemendikbudristek
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Buku 2 -->
+                            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex gap-4 items-center shadow-sm">
+                                <div class="w-24 h-32 bg-blue-800 rounded-xl flex-shrink-0 flex flex-col items-center justify-center text-white p-2 text-center shadow-md relative overflow-hidden border-2 border-gold-400">
+                                    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px]"></div>
+                                    <i class="fas fa-chalkboard-teacher text-2xl text-gold-400 mb-1"></i>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-gold-300">Panduan Guru</span>
+                                    <span class="text-xs font-extrabold mt-1">Matematika 1</span>
+                                    <span class="text-[9px] text-blue-200 mt-1">Kurikulum Merdeka</span>
+                                </div>
+                                <div class="space-y-1.5 flex-1">
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-bold rounded-md">Buku Panduan Guru</span>
+                                    <h4 class="font-bold text-slate-900 text-sm sm:text-base">Panduan Guru Matematika Kelas I</h4>
+                                    <p class="text-xs text-slate-500">Puskurbuk Kemendikbudristek RI</p>
+                                    <p class="text-xs text-slate-600">Fokus: Pedagogi Aktif Kinestetik & Asesmen Diagnostik.</p>
+                                    <div class="pt-1">
+                                        <span class="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                                            <i class="fas fa-check-circle"></i> Resmi Kemendikbudristek
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Kembali -->
+                <div class="pt-6 border-t border-slate-200 mt-6 flex justify-between items-center">
+                    <span class="text-xs text-slate-500">Pengembang: Lastry Zakaria • MI Al Huda Kota Gorontalo</span>
+                    <button onclick="backToDashboard()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl font-bold text-sm shadow-md transition flex items-center gap-2">
+                        <i class="fas fa-home"></i> Kembali ke Menu Utama
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // State Global Aplikasi
+        let studentData = {
+            name: "",
+            class: "Kelas 1-A",
+            unlockedBermain: false,
+            unlockedBerlatih: false,
+            currentMateriSlide: 0,
+            currentBermainIndex: 0,
+            bermainScore: 0,
+            bermainAnswers: [],
+            currentBerlatihIndex: 0,
+            berlatihScore: 0,
+            berlatihAnswers: [],
+            materiCompleted: [false, false, false, false, false]
+        };
+
+        // Inisialisasi Splash Screen & Progress
+        window.onload = function() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 20;
+                const bar = document.getElementById('splash-progress');
+                if (bar) bar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const splash = document.getElementById('splash-screen');
+                        if (splash) {
+                            splash.style.opacity = '0';
+                            setTimeout(() => splash.remove(), 700);
+                        }
+                        showCover();
+                    }, 400);
+                }
+            }, 300);
+        };
+
+        function showCustomModal(title, message, iconClass = "fas fa-info-circle") {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').innerHTML = `<i class="${iconClass}"></i>`;
+            const modal = document.getElementById('custom-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('custom-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function hideAllViews() {
+            ['view-cover', 'view-identity', 'view-guide', 'view-dashboard', 'view-belajar', 'view-bermain', 'view-berlatih', 'view-report', 'view-referensi'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
+            });
+        }
+
+        function openMenuReferensi() {
+            hideAllViews();
+            const el = document.getElementById('view-referensi');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+        }
+
+        function showCover() {
+            hideAllViews();
+            const el = document.getElementById('view-cover');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+        }
+
+        function openDeveloperModal() {
+            document.getElementById('modal-developer').classList.remove('hidden');
+            document.getElementById('modal-developer').classList.add('flex');
+        }
+        function closeDeveloperModal() {
+            document.getElementById('modal-developer').classList.remove('flex');
+            document.getElementById('modal-developer').classList.add('hidden');
+        }
+
+        function openObjectivesModal() {
+            document.getElementById('modal-objectives').classList.remove('hidden');
+            document.getElementById('modal-objectives').classList.add('flex');
+        }
+        function closeObjectivesModal() {
+            document.getElementById('modal-objectives').classList.remove('flex');
+            document.getElementById('modal-objectives').classList.add('hidden');
+        }
+
+        function showIdentityForm() {
+            hideAllViews();
+            const el = document.getElementById('view-identity');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+        }
+
+        function submitIdentity(e) {
+            e.preventDefault();
+            const name = document.getElementById('input-name').value.trim();
+            const cls = document.getElementById('input-class').value;
+            if (!name) {
+                showCustomModal("Peringatan", "Mohon masukkan nama lengkap Anda!", "fas fa-exclamation-triangle");
+                return;
+            }
+            studentData.name = name;
+            studentData.class = cls;
+            startGuide();
+        }
+
+        // Panduan Pengguna Slide (3 Slide)
+        let currentGuideSlide = 0;
+        const guideSlides = [
+            {
+                title: "Selamat Datang di Media Pembelajaran Bilangan!",
+                banner: "Langkah 1 dari 3 • Pengenalan Media",
+                content: `
+                    <div class="space-y-4 text-slate-700 text-sm sm:text-base leading-relaxed">
+                        <div class="flex items-start gap-3 bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                            <i class="fas fa-heart text-rose-500 text-xl mt-1"></i>
+                            <div>
+                                <h4 class="font-bold text-emerald-900">Halo, ${studentData.name}!</h4>
+                                <p class="text-xs sm:text-sm text-slate-600">Media ini dirancang khusus untuk siswa Kelas 1 MI Al Huda Kota Gorontalo agar belajar matematika menjadi sangat menyenangkan, penuh cinta kasih, dan bermakna.</p>
+                            </div>
+                        </div>
+                        <p>Kamu akan menjelajahi keindahan alam Provinsi Gorontalo sambil belajar mengenal dan menulis bilangan cacah sampai 50.</p>
+                    </div>
+                `
+            },
+            {
+                title: "Aturan & Alur Pembelajaran Bertahap",
+                banner: "Langkah 2 dari 3 • Sequential Locking",
+                content: `
+                    <div class="space-y-4 text-slate-700 text-sm sm:text-base leading-relaxed">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="bg-slate-50 p-3 rounded-xl border text-center">
+                                <i class="fas fa-book-reader text-emerald-600 text-2xl mb-2"></i>
+                                <h5 class="font-bold text-xs text-slate-900">1. BELAJAR</h5>
+                                <p class="text-xs text-slate-500 mt-1">Pahami 5 slide materi & selesaikan tantangan pemantiknya.</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border text-center">
+                                <i class="fas fa-gamepad text-slate-500 text-2xl mb-2"></i>
+                                <h5 class="font-bold text-xs text-slate-900">2. BERMAIN</h5>
+                                <p class="text-xs text-slate-500 mt-1">Terbuka setelah Belajar selesai. 10 tantangan literasi & numerasi.</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border text-center">
+                                <i class="fas fa-award text-slate-500 text-2xl mb-2"></i>
+                                <h5 class="font-bold text-xs text-slate-900">3. BERLATIH</h5>
+                                <p class="text-xs text-slate-500 mt-1">Terbuka setelah Bermain selesai. 10 soal asesmen berjenjang.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Siap Memulai Petualangan?",
+                banner: "Langkah 3 dari 3 • Siap Belajar",
+                content: `
+                    <div class="space-y-4 text-slate-700 text-sm sm:text-base leading-relaxed text-center py-4">
+                        <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-4xl mx-auto shadow-inner">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900">Tekan tombol di bawah untuk masuk ke Menu Utama!</h4>
+                        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">Semoga Allah SWT memberikan kemudahan dan keberkahan dalam menuntut ilmu hari ini.</p>
+                    </div>
+                `
+            }
+        ];
+
+        function startGuide() {
+            hideAllViews();
+            currentGuideSlide = 0;
+            const el = document.getElementById('view-guide');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+            renderGuideSlide();
+        }
+
+        function renderGuideSlide() {
+            const slide = guideSlides[currentGuideSlide];
+            document.getElementById('guide-welcome-banner').innerText = slide.banner;
+            document.getElementById('guide-title').innerText = slide.title;
+            document.getElementById('guide-step-indicator').innerText = `Slide ${currentGuideSlide + 1} dari 3`;
+            document.getElementById('guide-content-box').innerHTML = slide.content;
+
+            const btnPrev = document.getElementById('btn-guide-prev');
+            const btnNext = document.getElementById('btn-guide-next');
+            const btnFinish = document.getElementById('btn-guide-finish');
+
+            if (currentGuideSlide === 0) {
+                btnPrev.classList.add('hidden');
+            } else {
+                btnPrev.classList.remove('hidden');
+            }
+
+            if (currentGuideSlide === guideSlides.length - 1) {
+                btnNext.classList.add('hidden');
+                btnFinish.classList.remove('hidden');
+                btnFinish.classList.add('flex');
+            } else {
+                btnNext.classList.remove('hidden');
+                btnFinish.classList.add('hidden');
+                btnFinish.classList.remove('flex');
+            }
+        }
+
+        function nextGuideSlide() {
+            if (currentGuideSlide < guideSlides.length - 1) {
+                currentGuideSlide++;
+                renderGuideSlide();
+            }
+        }
+
+        function prevGuideSlide() {
+            if (currentGuideSlide > 0) {
+                currentGuideSlide--;
+                renderGuideSlide();
+            }
+        }
+
+        function enterDashboard() {
+            hideAllViews();
+            const el = document.getElementById('view-dashboard');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+            
+            document.getElementById('dash-student-name').innerText = studentData.name;
+            document.getElementById('dash-student-class').innerText = `${studentData.class} • MI Al Huda Kota Gorontalo`;
+            updateDashboardLocks();
+        }
+
+        function updateDashboardLocks() {
+            const cardBermain = document.getElementById('card-menu-bermain');
+            const tagBermainLock = document.getElementById('tag-bermain-lock');
+            const iconBermainBg = document.getElementById('icon-bermain-bg');
+            const badgeBermainStatus = document.getElementById('badge-bermain-status');
+            const iconBermainArrow = document.getElementById('icon-bermain-arrow');
+
+            const cardBerlatih = document.getElementById('card-menu-berlatih');
+            const tagBerlatihLock = document.getElementById('tag-berlatih-lock');
+            const iconBerlatihBg = document.getElementById('icon-berlatih-bg');
+            const badgeBerlatihStatus = document.getElementById('badge-berlatih-status');
+            const iconBerlatihArrow = document.getElementById('icon-berlatih-arrow');
+
+            if (studentData.unlockedBermain) {
+                cardBermain.classList.remove('opacity-75', 'border-slate-200');
+                cardBermain.classList.add('border-emerald-500', 'shadow-lg');
+                tagBermainLock.className = "absolute top-0 right-0 bg-emerald-500 text-white px-4 py-1.5 rounded-bl-2xl text-xs font-bold flex items-center gap-1.5";
+                tagBermainLock.innerHTML = '<i class="fas fa-unlock text-gold-400"></i> TERBUKA';
+                iconBermainBg.className = "w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mb-4 shadow-sm";
+                badgeBermainStatus.innerText = "Mulai Bermain";
+                badgeBermainStatus.className = "text-xs font-bold text-emerald-600";
+                iconBermainArrow.className = "w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm";
+                iconBermainArrow.innerHTML = '<i class="fas fa-arrow-right"></i>';
+            }
+
+            if (studentData.unlockedBerlatih) {
+                cardBerlatih.classList.remove('opacity-75', 'border-slate-200');
+                cardBerlatih.classList.add('border-emerald-500', 'shadow-lg');
+                tagBerlatihLock.className = "absolute top-0 right-0 bg-emerald-500 text-white px-4 py-1.5 rounded-bl-2xl text-xs font-bold flex items-center gap-1.5";
+                tagBerlatihLock.innerHTML = '<i class="fas fa-unlock text-gold-400"></i> TERBUKA';
+                iconBerlatihBg.className = "w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mb-4 shadow-sm";
+                badgeBerlatihStatus.innerText = "Mulai Berlatih";
+                badgeBerlatihStatus.className = "text-xs font-bold text-emerald-600";
+                iconBerlatihArrow.className = "w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm";
+                iconBerlatihArrow.innerHTML = '<i class="fas fa-arrow-right"></i>';
+            }
+        }
+
+        function backToDashboard() {
+            enterDashboard();
+        }
+
+        function resetApp() {
+            if (confirm("Apakah Anda ingin keluar dan kembali ke halaman awal?")) {
+                location.reload();
+            }
+        }
+
+        // ==========================================
+        // 5. DATA 5 SLIDE MATERI MENDALAM
+        // ==========================================
+        const materiSlides = [
+            {
+                title: "Slide 1: Mengenal Bilangan 1 sampai 10 di Danau Limboto",
+                materi: "Bilangan adalah lambang atau angka yang menyatakan jumlah benda. Di sekitar kawasan Danau Limboto, nelayan tradisional menggunakan perahu. Jika seorang nelayan menyiapkan 5 perahu ketinting di dermaga dan menambahkan 3 perahu lagi setelah shalat Subuh, jumlah seluruh perahu menjadi 8 perahu. Angka 1 sampai 10 sangat mudah kita hitung dengan jari tangan kita yang berjumlah 10 sebagai nikmat Allah SWT.",
+                lokasi: "Kawasan Danau Limboto, Kabupaten Gorontalo",
+                kbc: "Cinta kasih kepada sesama nelayan dan rasa syukur atas limpahan ikan mujair dan gabus dari Danau Limboto.",
+                quran: {
+                    arab: "وَالسَّمَاءَ رَفَعَهَا وَوَضَعَ الْمِيزَانَ",
+                    surah: "QS. Ar-Rahman: 7",
+                    terjemahan: "Dan Allah telah meninggikan langit dan Dia menetapkan neraca (keseimbangan)."
+                },
+                pemantik: {
+                    soal: "Berapa jumlah jari tangan kanan dan kiri kita yang digunakan untuk menghitung nikmat Allah?",
+                    opsi: ["A. 5 jari", "B. 10 jari", "C. 20 jari"],
+                    kunci: 1 // B
+                }
+            },
+            {
+                title: "Slide 2: Bilangan 11 sampai 20 di Pesisir Teluk Tomini",
+                materi: "Wilayah pesisir Teluk Tomini di Gorontalo kaya akan keindahan laut dan terumbu karang. Saat kegiatan penanaman mangrove (bakau) bersama siswa madrasah, terkumpul 15 bibit pohon mangrove di dalam polybag. Bilangan belasan dimulai dari angka 11 (sebelas) sampai 20 (dua puluh). Penulisan angka belasan selalu diawali dengan angka 1 di sebelah kiri dan diikuti angka satuannya di sebelah kanan.",
+                lokasi: "Pesisir Teluk Tomini, Gorontalo",
+                kbc: "Cinta kelestarian lingkungan hidup dan pelestarian hutan bakau (mangrove) untuk mencegah abrasi pantai.",
+                quran: {
+                    arab: "ظَهَرَ الْفَسَادُ فِي الْبَرِّ وَالْبَحْرِ بِمَا كَسَبَتْ أَيْدِي النَّاسِ",
+                    surah: "QS. Ar-Rum: 41",
+                    terjemahan: "Telah nampak kerusakan di darat dan di laut disebabkan karena perbuatan tangan manusia..."
+                },
+                pemantik: {
+                    soal: "Jika siswa membawa 15 bibit pohon mangrove untuk ditanam di Teluk Tomini, angka berapakah itu?",
+                    opsi: ["A. 12", "B. 14", "C. 15"],
+                    kunci: 2 // C
+                }
+            },
+            {
+                title: "Slide 3: Bilangan 21 sampai 30 di Dataran Agraris Gorontalo",
+                materi: "Gorontalo terkenal sebagai lumbung jagung di Sulawesi. Di dataran agraris Kabupaten Gorontalo, para petani menjemur hasil panen jagung kuning yang manis. Dalam satu keranjang besar terdapat 24 tongkol jagung siap olah. Bilangan 21 sampai 30 adalah bilangan dua angka yang terdiri dari puluhan (angka 2 di depan yang bernilai 20) dan satuan di belakangnya.",
+                lokasi: "Dataran Agraris Kabupaten Gorontalo",
+                kbc: "Cinta tanah air dan penghargaan tinggi kepada para petani jagung yang bekerja keras dengan jujur dan halal.",
+                quran: {
+                    arab: "وَهُوَ الَّذِي أَنْشَأَ جَنَّاتٍ مَعْرُوشَاتٍ وَغَيْرَ مَعْرُوشَاتٍ",
+                    surah: "QS. Al-An'am: 141",
+                    terjemahan: "Dan Dialah yang menjadikan kebun-kebun yang berteras dan yang tidak berteras..."
+                },
+                pemantik: {
+                    soal: "Ibu guru menghitung jagung di keranjang sebanyak 24 tongkol. Angka puluhannya adalah...",
+                    opsi: ["A. 2 (bernilai 20)", "B. 4 (bernilai 4)", "C. 24 (bernilai 24)"],
+                    kunci: 0 // A
+                }
+            },
+            {
+                title: "Slide 4: Bilangan 31 sampai 40 dalam Tradisi Gorontalo",
+                materi: "Masyarakat Gorontalo memiliki tradisi keagamaan yang kental seperti 'Tumbilotohe' (pasang lampu malam sunyi di bulan Ramadhan). Di sebuah kampung nelayan, para pemuda memasang 35 lampu botol minyak tanah di sepanjang jalan desa. Lambang bilangan 35 ditulis dengan angka 3 dan 5. Urutan bilangan semakin ke kanan nilainya semakin besar.",
+                    lokasi: "Kampung Adat Gorontalo",
+                kbc: "Cinta sesama insan manusia melalui gotong royong dan semangat kebersamaan menyambut bulan suci.",
+                quran: {
+                    arab: "وَتَعَاوَنُوا عَلَى الْبِرِّ وَالتَّقْوَىٰ",
+                    surah: "QS. Al-Ma'idah: 2",
+                    terjemahan: "Dan tolong-menolonglah kamu dalam (mengerjakan) kebajikan dan takwa..."
+                },
+                pemantik: {
+                    soal: "Manakah lambang bilangan untuk 'tiga puluh lima' lampu botol?",
+                    opsi: ["A. 53", "B. 35", "C. 305"],
+                    kunci: 1 // B
+                }
+            },
+            {
+                title: "Slide 5: Bilangan 41 sampai 50: Puncak Intuisi Bilangan",
+                materi: "Menjelang angka 50, pemahaman dan intuisi bilangan kita semakin matang. Di halaman Madrasah Al Huda Kota Gorontalo, siswa berbaris rapi dalam kegiatan upacara bendera dan senam pagi. Jumlah seluruh siswa kelas 1 ada 48 anak. Angka 48 terletak di antara bilangan 47 dan 49 serta lebih besar dari 40.",
+                lokasi: "MI Al Huda Kota Gorontalo",
+                kbc: "Cinta tanah air melalui disiplin upacara bendera hari Senin dan kecintaan kepada sesama warga madrasah.",
+                quran: {
+                    arab: "إِنَّ اللَّهَ يُحِبُّ الَّذِينَ يُقَاتِلُونَ فِي سَبِيلِهِ صَفًّا كَأَنَّهُمْ بُنْيَانُ مَرْصُوصٌ",
+                    surah: "QS. As-Saff: 4",
+                    terjemahan: "Sesungguhnya Allah mencintai orang-orang yang berperang di jalan-Nya dalam barisan yang teratur seakan-akan mereka seperti suatu bangunan yang tersusun kokoh."
+                },
+                pemantik: {
+                    soal: "Bilangan berapa yang letaknya tepat sesudah angka 48 dalam hitungan maju?",
+                    opsi: ["A. 47", "B. 49", "C. 50"],
+                    kunci: 1 // B
+                }
+            }
+        ];
+
+        function openMenuBelajar() {
+            hideAllViews();
+            studentData.currentMateriSlide = 0;
+            const el = document.getElementById('view-belajar');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+            renderMateriSlide();
+        }
+
+        function renderMateriSlide() {
+            const idx = studentData.currentMateriSlide;
+            const slide = materiSlides[idx];
+
+            document.getElementById('materi-title-top').innerText = slide.title;
+            document.getElementById('materi-counter').innerText = `Slide ${idx + 1} / 5`;
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 space-y-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700"><i class="fas fa-map-marker-alt"></i> Konteks Wilayah: ${slide.lokasi}</span>
+                        <p class="text-slate-700 text-sm sm:text-base leading-relaxed">${slide.materi}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-amber-50 rounded-2xl p-4 border border-amber-100 text-slate-700 text-xs sm:text-sm space-y-1">
+                            <span class="font-bold text-amber-900 flex items-center gap-1.5"><i class="fas fa-heart text-rose-500"></i> Kurikulum Berbasis Cinta:</span>
+                            <p class="text-slate-600">${slide.kbc}</p>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-slate-700 text-xs sm:text-sm space-y-1">
+                            <span class="font-bold text-emerald-800 flex items-center gap-1.5"><i class="fas fa-quran text-emerald-600"></i> ${slide.quran.surah}:</span>
+                            <p class="arabic-text text-base text-right font-bold text-slate-900">${slide.quran.arab}</p>
+                            <p class="text-xs text-slate-600 italic">"${slide.quran.terjemahan}"</p>
+                        </div>
+                    </div>
+
+                    <!-- Tantangan Pemantik Interaktif -->
+                    <div class="bg-emerald-600/5 rounded-2xl p-4 border-2 border-emerald-500/30 space-y-3">
+                        <h4 class="font-bold text-emerald-900 text-sm flex items-center gap-2">
+                            <i class="fas fa-question-circle text-emerald-600"></i> Tantangan Pemantik Slide ${idx + 1}
+                        </h4>
+                        <p class="text-xs sm:text-sm text-slate-800 font-medium">${slide.pemantik.soal}</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="pemantik-options-container">
+            `;
+
+            slide.pemantik.opsi.forEach((ops, oIdx) => {
+                html += `
+                    <button onclick="checkPemantikAnswer(${idx}, ${oIdx})" id="pemantik-btn-${oIdx}" class="p-2.5 bg-white hover:bg-emerald-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 transition shadow-sm text-center">
+                        ${ops}
+                    </button>
+                `;
+            });
+
+            html += `
+                        </div>
+                        <div id="pemantik-feedback" class="text-xs font-bold text-emerald-700 hidden"></div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('materi-body-content').innerHTML = html;
+
+            const btnPrev = document.getElementById('btn-materi-prev');
+            const btnNext = document.getElementById('btn-materi-next');
+            const quizStatus = document.getElementById('materi-quiz-status');
+
+            if (idx === 0) {
+                btnPrev.classList.add('hidden');
+            } else {
+                btnPrev.classList.remove('hidden');
+            }
+
+            if (studentData.materiCompleted[idx]) {
+                btnNext.disabled = false;
+                btnNext.classList.remove('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+                btnNext.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'text-white', 'shadow-md');
+                quizStatus.innerHTML = '<span class="text-emerald-700"><i class="fas fa-check-circle"></i> Tantangan selesai! Silakan lanjut ke slide berikutnya.</span>';
+                quizStatus.className = "text-xs font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200";
+            } else {
+                btnNext.disabled = true;
+                btnNext.classList.add('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+                btnNext.classList.remove('bg-emerald-600', 'hover:bg-emerald-700', 'text-white', 'shadow-md');
+                quizStatus.innerHTML = '⚠️ Selesaikan tantangan pemantik di atas untuk lanjut!';
+                quizStatus.className = "text-xs font-bold text-amber-600 bg-amber-50 px-4 py-2 rounded-xl border border-amber-200";
+            }
+        }
+
+        function checkPemantikAnswer(slideIdx, chosenIdx) {
+            const slide = materiSlides[slideIdx];
+            const feedback = document.getElementById('pemantik-feedback');
+            
+            // Highlight buttons
+            slide.pemantik.opsi.forEach((_, oIdx) => {
+                const btn = document.getElementById(`pemantik-btn-${oIdx}`);
+                btn.disabled = true;
+                if (oIdx === slide.pemantik.kunci) {
+                    btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
+                } else if (oIdx === chosenIdx) {
+                    btn.classList.add('bg-rose-500', 'text-white', 'border-rose-600');
+                }
+            });
+
+            if (chosenIdx === slide.pemantik.kunci) {
+                feedback.innerText = "🎉 Benar sekali! Hebat Ananda!";
+                feedback.classList.remove('hidden');
+                studentData.materiCompleted[slideIdx] = true;
+                
+                const btnNext = document.getElementById('btn-materi-next');
+                btnNext.disabled = false;
+                btnNext.classList.remove('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+                btnNext.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'text-white', 'shadow-md');
+
+                const quizStatus = document.getElementById('materi-quiz-status');
+                quizStatus.innerHTML = '<span class="text-emerald-700"><i class="fas fa-check-circle"></i> Tantangan selesai! Silakan lanjut ke slide berikutnya.</span>';
+                quizStatus.className = "text-xs font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200";
+
+                // Jika slide terakhir selesai, buka kunci menu Bermain
+                if (studentData.materiCompleted.every(v => v === true)) {
+                    studentData.unlockedBermain = true;
+                }
+            } else {
+                feedback.innerText = "❌ Kurang tepat. Coba perhatikan kembali materinya ya!";
+                feedback.classList.remove('hidden');
+            }
+        }
+
+        function nextMateriSlide() {
+            if (studentData.currentMateriSlide < materiSlides.length - 1) {
+                studentData.currentMateriSlide++;
+                renderMateriSlide();
+            } else {
+                // Selesai seluruh materi
+                studentData.unlockedBermain = true;
+                showCustomModal("Selamat!", "Ananda telah menuntaskan seluruh materi belajar dengan luar biasa! Menu BERMAIN kini resmi terbuka.", "fas fa-trophy");
+                enterDashboard();
+            }
+        }
+
+        function prevMateriSlide() {
+            if (studentData.currentMateriSlide > 0) {
+                studentData.currentMateriSlide--;
+                renderMateriSlide();
+            }
+        }
+
+        function tryOpenMenuBermain() {
+            if (!studentData.unlockedBermain) {
+                showCustomModal("Menu Terkunci", "Selesaikan terlebih dahulu 5 Slide Materi pada Menu BELAJAR untuk membuka Menu BERMAIN!", "fas fa-lock");
+            } else {
+                openMenuBermain();
+            }
+        }
+
+        function tryOpenMenuBerlatih() {
+            if (!studentData.unlockedBerlatih) {
+                showCustomModal("Menu Terkunci", "Selesaikan terlebih dahulu 10 Tantangan Gamifikasi pada Menu BERMAIN untuk membuka Menu BERLATIH!", "fas fa-lock");
+            } else {
+                openMenuBerlatih();
+            }
+        }
+
+        // ==========================================
+        // 6. 10 TANTANGAN BERMAIN (GAMIFIKASI DENGAN STIMULUS LITERASI & NUMERASI)
+        // ==========================================
+        const bermainChallenges = [
+            {
+                type: "mc",
+                title: "Tantangan 1: Nelayan Teluk Tomini",
+                stimulus: "Di pagi hari yang cerah, para nelayan di pesisir Teluk Tomini, Provinsi Gorontalo, bersiap turun ke laut. Ayah Zaki menyiapkan 12 ekor ikan cakalang segar hasil tangkapan semalam untuk dijual ke pasar sentral. Dalam ilmu hitung bilangan cacah, angka 12 ditulis setelah angka 11 dan sebelum angka 13. Ikan segar adalah rezeki halal dari Allah SWT yang harus disyukuri dengan cara berbagi kepada tetangga sekitar sebagai bentuk Kurikulum Berbasis Cinta sesama manusia.",
+                question: "Berapa jumlah ikan cakalang yang disiapkan Ayah Zaki?",
+                options: ["A. 10 ekor", "B. 12 ekor", "C. 15 ekor"],
+                correct: 1
+            },
+            {
+                type: "mc",
+                title: "Tantangan 2: Danau Limboto & Perahu Ketinting",
+                stimulus: "Kawasan Danau Limboto di Gorontalo dikelilingi oleh tumbuhan air eceng gondok. Pak Guru mengajak murid-murid MI Al Huda mengamati perahu ketinting yang berjejer di tepian danau. Terdapat 18 perahu ketinting yang bersandar rapi menunggu giliran mengangkut hasil panen ikan. Bilangan 18 terdiri dari 1 puluhan dan 8 satuan. Menjaga kebersihan air Danau Limboto adalah wujud cinta lingkungan ciptaan Allah.",
+                question: "Berapa jumlah perahu ketinting yang bersandar di tepian danau?",
+                options: ["A. 16 perahu", "B. 18 perahu", "C. 20 perahu"],
+                correct: 1
+            },
+            {
+                type: "drag",
+                title: "Tantangan 3: Petani Jagung Dataran Agraris",
+                stimulus: "Provinsi Gorontalo dikenal luas sebagai daerah agraris penghasil jagung manis berkualitas tinggi. Di Desa Tilango, seorang petani memanen 25 karung jagung kuning dalam waktu dua hari. Angka 25 memiliki nilai tempat angka 2 sebagai puluhan dan angka 5 sebagai satuan. Pekerjaan petani yang gigih mengajarkan kita arti kerja keras yang halal dan penuh keberkahan.",
+                question: "Susunlah nilai tempat dari bilangan 25 dengan benar:",
+                parts: ["Angka 2 bernilai ...", "Angka 5 bernilai ..."],
+                optionsList: [["20", "2", "50"], ["5", "50", "2"]],
+                correctAnswers: [0, 0] // 20 and 5
+            },
+            {
+                type: "mc",
+                title: "Tantangan 4: Festival Tumbilotohe",
+                stimulus: "Menjelang akhir Ramadhan di Gorontalo, malam 'Tumbilotohe' menyala terang dengan ribuan lampu botol minyak tanah. Di pekarangan Masjid Al Huda, anak-anak memasang 32 lampu hias botol. Bilangan 32 dibaca 'tiga puluh dua'. Cahaya lampu melambangkan semarak keimanan dan kecintaan kepada bulan suci yang penuh ampunan.",
+                question: "Bagaimanakah cara membaca lambang bilangan 32?",
+                options: ["A. Tiga puluh dua", "B. Dua puluh tiga", "C. Tiga puluh tiga"],
+                correct: 0
+            },
+            {
+                type: "order",
+                title: "Tantangan 5: Penanaman Pohon Mangrove",
+                stimulus: "Untuk melestarikan ekosistem pesisir Teluk Tomini dari abrasi air laut, siswa MI Al Huda menanam bibit mangrove secara berurutan. Mereka membawa bibit dengan nomor urut. Bantulah mengurutkan bilangan berikut dari yang terkecil: 14, 11, 13, 12, 15. Kecintaan kepada alam sekitar adalah bagian dari iman yang diajarkan dalam agama.",
+                question: "Urutan bilangan dari yang terkecil yang benar adalah:",
+                options: ["A. 15, 14, 13, 12, 11", "B. 11, 12, 13, 14, 15", "C. 12, 11, 14, 13, 15"],
+                correct: 1
+            },
+            {
+                type: "mc",
+                title: "Tantangan 6: Panen Ikan Mujair Danau Limboto",
+                stimulus: "Ibu Fatma memelihara ikan mujair di keramba apung Danau Limboto. Hari ini berhasil dipanen sebanyak 38 ekor ikan segar untuk dinikmati bersama keluarga tercinta. Bilangan 38 terletak di antara bilangan 37 dan 39. Mensyukuri nikmat makanan yang halal dan sehat membuat tubuh kuat untuk beribadah kepada Allah.",
+                question: "Bilangan berapakah yang letaknya tepat sebelum angka 38?",
+                options: ["A. 37", "B. 39", "C. 40"],
+                correct: 0
+            },
+            {
+                type: "mc",
+                title: "Tantangan 7: Pasar Tradisional Gorontalo",
+                stimulus: "Ibu berbelanja kue tradisional pasung dan lampu tart di pasar tradisional Gorontalo. Pedagang kue menyusun 44 buah kue di dalam wadah besar. Lambang bilangan 44 terdiri dari angka 4 puluhan dan 4 satuan yang bernilai sama. Sikap jujur pedagang di pasar sangat dicintai oleh Allah SWT dan Rasulullah SAW.",
+                question: "Berapakah jumlah nilai angka 4 pada puluhan dalam bilangan 44?",
+                options: ["A. 4", "B. 40", "C. 44"],
+                correct: 1
+            },
+            {
+                type: "order",
+                title: "Tantangan 8: Barisan Siswa Upacara Bendera",
+                stimulus: "Setiap hari Senin, siswa MI Al Huda Kota Gorontalo berbaris dengan tertib di halaman madrasah. Dalam satu barisan kelas 1 terdapat 47 anak yang berdiri tegak menyanyikan lagu Indonesia Raya dengan penuh semangat cinta tanah air. Bilangan 47 jika diuraikan terdiri dari bentuk panjang puluhan dan satuan.",
+                question: "Bentuk panjang dari bilangan 47 adalah:",
+                options: ["A. 4 + 70", "B. 40 + 7", "C. 47 + 0"],
+                correct: 1
+            },
+            {
+                type: "mc",
+                title: "Tantangan 9: Wisata Menara Keagungan Gorontalo",
+                stimulus: "Menara Keagungan Limboto adalah ikon kebanggaan masyarakat Gorontalo. Di sekitar taman menara, dipasang lampu hias sebanyak 49 buah menyambut hari besar Islam. Bilangan 49 adalah bilangan sebelum angka 50. Menjaga keindahan fasilitas umum adalah cerminan akhlak mulia anak madrasah.",
+                question: "Manakah lambang bilangan untuk 'empat puluh sembilan'?",
+                options: ["A. 49", "B. 94", "C. 409"],
+                correct: 0
+            },
+            {
+                type: "mc",
+                title: "Tantangan 10: Puncak Bilangan Cacah Sampai 50",
+                stimulus: "Alhamdulillah, Ananda telah menjelajahi berbagai tempat indah di Gorontalo dan menguasai bilangan cacah. Jumlah total anak hebat di Madrasah Ibtidaiyah Al Huda yang mengikuti pembelajaran interaktif hari ini mencapai tepat 50 siswa. Angka 50 adalah batas akhir bilangan cacah dalam pembelajaran Fase A ini.",
+                question: "Berapakah lambang bilangan lima puluh?",
+                options: ["A. 5", "B. 50", "C. 500"],
+                correct: 1
+            }
+        ];
+
+        function openMenuBermain() {
+            hideAllViews();
+            studentData.currentBermainIndex = 0;
+            studentData.bermainScore = 0;
+            studentData.bermainAnswers = [];
+            const el = document.getElementById('view-bermain');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+            renderBermainChallenge();
+        }
+
+        function renderBermainChallenge() {
+            const idx = studentData.currentBermainIndex;
+            const chal = bermainChallenges[idx];
+
+            document.getElementById('bermain-counter').innerText = `Soal ${idx + 1} / 10`;
+            document.getElementById('bermain-score-badge').innerText = `Skor: ${studentData.bermainScore}`;
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 space-y-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700"><i class="fas fa-gamepad"></i> ${chal.title}</span>
+                        <p class="text-slate-700 text-xs sm:text-sm leading-relaxed">${chal.stimulus}</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
+                        <p class="font-bold text-slate-900 text-sm sm:text-base">${chal.question}</p>
+            `;
+
+            if (chal.type === 'mc' || chal.type === 'order') {
+                html += `<div class="grid grid-cols-1 gap-2" id="bermain-options-list">`;
+                chal.options.forEach((opt, oIdx) => {
+                    html += `
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 hover:bg-emerald-50 border border-slate-200 rounded-xl cursor-pointer transition">
+                            <input type="radio" name="bermain-opt" value="${oIdx}" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500">
+                            <span class="text-sm font-semibold text-slate-700">${opt}</span>
+                        </label>
+                    `;
+                });
+                html += `</div>`;
+            } else if (chal.type === 'drag') {
+                html += `<div class="space-y-3" id="bermain-drag-container">`;
+                chal.parts.forEach((part, pIdx) => {
+                    html += `
+                        <div class="flex flex-col sm:flex-row items-center justify-between bg-slate-50 p-3 rounded-xl border gap-2">
+                            <span class="text-sm font-semibold text-slate-700">${part}</span>
+                            <select id="drag-select-${pIdx}" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                <option value="">-- Pilih Nilai --</option>
+                    `;
+                    chal.optionsList[pIdx].forEach((subOpt, sIdx) => {
+                        html += `<option value="${sIdx}">${subOpt}</option>`;
+                    });
+                    html += `</select></div>`;
+                });
+                html += `</div>`;
+            }
+
+            html += `</div></div>`;
+            document.getElementById('bermain-content-box').innerHTML = html;
+        }
+
+        function submitBermainAnswer() {
+            const idx = studentData.currentBermainIndex;
+            const chal = bermainChallenges[idx];
+            let isCorrect = false;
+
+            if (chal.type === 'mc' || chal.type === 'order') {
+                const selected = document.querySelector('input[name="bermain-opt"]:checked');
+                if (!selected) {
+                    showCustomModal("Peringatan", "Mohon pilih salah satu jawaban terlebih dahulu!", "fas fa-exclamation-triangle");
+                    return;
+                }
+                const val = parseInt(selected.value);
+                if (val === chal.correct) isCorrect = true;
+            } else if (chal.type === 'drag') {
+                let allCorrect = true;
+                chal.correctAnswers.forEach((ans, pIdx) => {
+                    const sel = document.getElementById(`drag-select-${pIdx}`).value;
+                    if (parseInt(sel) !== ans) allCorrect = false;
+                });
+                if (allCorrect) isCorrect = true;
+            }
+
+            if (isCorrect) {
+                studentData.bermainScore += 1;
+                showCustomModal("Hebat!", "Jawaban Ananda benar! Pertahankan semangat belajarnya.", "fas fa-check-circle");
+            } else {
+                showCustomModal("Kurang Tepat", "Tetap semangat! Perhatikan kembali stimulus bacaan di atas.", "fas fa-times-circle");
+            }
+
+            studentData.bermainAnswers.push(isCorrect);
+
+            if (studentData.currentBermainIndex < bermainChallenges.length - 1) {
+                studentData.currentBermainIndex++;
+                renderBermainChallenge();
+            } else {
+                // Selesai Bermain, buka kunci Menu Berlatih
+                studentData.unlockedBerlatih = true;
+                showCustomModal("Selamat!", `Tantangan Bermain selesai! Skor Anda: ${studentData.bermainScore} dari 10. Menu BERLATIH kini resmi terbuka!`, "fas fa-award");
+                enterDashboard();
+            }
+        }
+
+        // ==========================================
+        // 7. LAYER MENU 3: BERLATIH (10 SOAL ASESMEN BERJENJANG)
+        // ==========================================
+        const berlatihSoal = [
+            // Level 1: Dasar / Pemahaman (Nomor 1-3, @8 poin)
+            {
+                level: "Level 1 - Dasar / Pemahaman",
+                badge: "Level 1 (@8 Poin)",
+                stimulus: "Di perkampungan nelayan sekitar Danau Limboto, seorang anak bernama Arif membantu ayahnya menghitung hasil tangkapan ikan mujair segar dalam wadah keranjang bambu. Terdapat 14 ekor ikan mujair siap diantar ke pasar. Angka 14 ditulis dengan lambang bilangan angka satu dan empat.",
+                question: "Berapakah jumlah ikan mujair yang dihitung oleh Arif?",
+                options: ["A. 12 ekor", "B. 14 ekor", "C. 16 ekor"],
+                correct: 1,
+                bobot: 8,
+                lvlNum: 1
+            },
+            {
+                level: "Level 1 - Dasar / Pemahaman",
+                badge: "Level 1 (@8 Poin)",
+                stimulus: "Ibu guru di MI Al Huda Kota Gorontalo membagikan buku tulis kepada siswa kelas 1. Di atas meja terdapat 22 buku tulis bersampul rapi. Bilangan 22 terdiri dari angka puluhan dan satuan yang sama.",
+                question: "Bagaimanakah cara membaca lambang bilangan 22?",
+                options: ["A. Dua puluh dua", "B. Dua puluh satu", "C. Dua puluh tiga"],
+                correct: 0,
+                bobot: 8,
+                lvlNum: 1
+            },
+            {
+                level: "Level 1 - Dasar / Pemahaman",
+                badge: "Level 1 (@8 Poin)",
+                stimulus: "Saat festival Tumbilotohe di Gorontalo, lampu hias minyak tanah dipasang di sepanjang jalan desa. Petugas menghitung jumlah lampu hias yang menyala mencapai 36 buah.",
+                question: "Manakah lambang bilangan untuk 'tiga puluh enam' lampu hias?",
+                options: ["A. 63", "B. 36", "C. 306"],
+                correct: 1,
+                bobot: 8,
+                lvlNum: 1
+            },
+            // Level 2: Sedang / Aplikasi & Penerapan (Nomor 4-7, @10 poin)
+            {
+                level: "Level 2 - Sedang / Penerapan",
+                badge: "Level 2 (@10 Poin)",
+                stimulus: "Petani jagung di dataran agraris Gorontalo menjemur jagung di halaman rumah. Ayah mengumpulkan 28 tongkol jagung di keranjang pertama dan 10 tongkol jagung di keranjang kedua. Jika digabungkan, berapakah jumlah seluruh tongkol jagung tersebut?",
+                question: "Jumlah total tongkol jagung Ayah adalah...",
+                options: ["A. 38 tongkol", "B. 48 tongkol", "C. 28 tongkol"],
+                correct: 0,
+                bobot: 10,
+                lvlNum: 2
+            },
+            {
+                level: "Level 2 - Sedang / Penerapan",
+                badge: "Level 2 (@10 Poin)",
+                stimulus: "Di pesisir Teluk Tomini, kegiatan penanaman pohon mangrove diikuti oleh 42 siswa madrasah. Setiap anak membawa satu bibit tanaman bakau untuk menjaga kelestarian pantai dari abrasi air laut.",
+                question: "Bilangan 42 jika diuraikan ke dalam bentuk nilai tempat puluhan dan satuan menjadi:",
+                options: ["A. 4 puluhan dan 2 satuan", "B. 2 puluhan dan 4 satuan", "C. 40 puluhan dan 20 satuan"],
+                correct: 0,
+                bobot: 10,
+                lvlNum: 2
+            },
+            {
+                level: "Level 2 - Sedang / Penerapan",
+                badge: "Level 2 (@10 Poin)",
+                stimulus: "Perhatikan urutan bilangan berikut yang diamati dari hasil panen buah kelapa di perkebunan Gorontalo: 31, 33, 32, 35, 34. Bantulah mengurutkan bilangan tersebut dari yang terkecil hingga terbesar.",
+                question: "Urutan bilangan yang benar adalah:",
+                options: ["A. 35, 34, 33, 32, 31", "B. 31, 32, 33, 34, 35", "C. 31, 33, 32, 34, 35"],
+                correct: 1,
+                bobot: 10,
+                lvlNum: 2
+            },
+            {
+                level: "Level 2 - Sedang / Penerapan",
+                badge: "Level 2 (@10 Poin)",
+                stimulus: "Ibu guru menuliskan bilangan 45 di papan tulis. Bilangan ini berada di antara dua bilangan cacah sebelum dan sesudahnya dalam urutan berhitung.",
+                question: "Bilangan berapakah yang letaknya tepat sesudah angka 45?",
+                options: ["A. 44", "B. 46", "C. 50"],
+                correct: 1,
+                bobot: 10,
+                lvlNum: 2
+            },
+            // Level 3: Tinggi / Penalaran HOTS (Nomor 8-10, @12 poin)
+            {
+                level: "Level 3 - Tinggi / Penalaran HOTS",
+                badge: "Level 3 HOTS (@12 Poin)",
+                stimulus: "Di tepi Danau Limboto, nelayan mempunyai 43 ekor ikan gabus segar. Sebanyak 13 ekor ikan diberikan kepada tetangga yang membutuhkan sebagai wujud Kurikulum Berbasis Cinta kasih sayang antarsesama. Berapa sisa ikan gabus nelayan sekarang?",
+                question: "Sisa ikan gabus nelayan adalah...",
+                options: ["A. 30 ekor", "B. 40 ekor", "C. 33 ekor"],
+                correct: 0,
+                bobot: 12,
+                lvlNum: 3
+            },
+            {
+                level: "Level 3 - Tinggi / Penalaran HOTS",
+                badge: "Level 3 HOTS (@12 Poin)",
+                stimulus: "Perhatikan perbandingan bilangan berikut! Di pasar tradisional Gorontalo, pedagang A menjual 39 bungkus kue tradisional, sedangkan pedagang B menjual 46 bungkus kue tradisional. Manakah pernyataan perbandingan yang paling tepat?",
+                question: "Pernyataan yang benar mengenai jumlah kue pedagang A dan B adalah:",
+                options: ["A. 39 lebih besar dari 46", "B. 39 lebih kecil dari 46", "C. 39 sama dengan 46"],
+                correct: 1,
+                bobot: 12,
+                lvlNum: 3
+            },
+            {
+                level: "Level 3 - Tinggi / Penalaran HOTS",
+                badge: "Level 3 HOTS (@12 Poin)",
+                stimulus: "Menjelang akhir pembelajaran bilangan sampai 50 di MI Al Huda Kota Gorontalo, Zaki memiliki teka-teki bilangan: 'Aku adalah bilangan antara 47 dan 49, dan aku lebih besar dari 47.' Bilangan berapakah aku?",
+                question: "Bilangan yang dimaksud dalam teka-teki Zaki adalah...",
+                options: ["A. 46", "B. 48", "C. 50"],
+                correct: 1,
+                bobot: 12,
+                lvlNum: 3
+            }
+        ];
+
+        function openMenuBerlatih() {
+            hideAllViews();
+            studentData.currentBerlatihIndex = 0;
+            studentData.berlatihScore = 0;
+            studentData.berlatihAnswers = [];
+            const el = document.getElementById('view-berlatih');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+            renderBerlatihSoal();
+        }
+
+        function renderBerlatihSoal() {
+            const idx = studentData.currentBerlatihIndex;
+            const soal = berlatihSoal[idx];
+
+            document.getElementById('berlatih-level-title').innerText = soal.level;
+            document.getElementById('berlatih-badge-level').innerText = soal.badge;
+            document.getElementById('berlatih-counter').innerText = `Soal ${idx + 1} / 10`;
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 space-y-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700"><i class="fas fa-award"></i> Stimulus Soal Asesmen ${idx + 1}</span>
+                        <p class="text-slate-700 text-xs sm:text-sm leading-relaxed">${soal.stimulus}</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
+                        <p class="font-bold text-slate-900 text-sm sm:text-base">${soal.question}</p>
+                        <div class="grid grid-cols-1 gap-2">
+            `;
+
+            soal.options.forEach((opt, oIdx) => {
+                html += `
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 hover:bg-emerald-50 border border-slate-200 rounded-xl cursor-pointer transition">
+                        <input type="radio" name="berlatih-opt" value="${oIdx}" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500">
+                        <span class="text-sm font-semibold text-slate-700">${opt}</span>
+                    </label>
+                `;
+            });
+
+            html += `</div></div></div>`;
+            document.getElementById('berlatih-content-box').innerHTML = html;
+        }
+
+        function submitBerlatihAnswer() {
+            const idx = studentData.currentBerlatihIndex;
+            const soal = berlatihSoal[idx];
+
+            const selected = document.querySelector('input[name="berlatih-opt"]:checked');
+            if (!selected) {
+                showCustomModal("Peringatan", "Mohon pilih salah satu jawaban asesmen terlebih dahulu!", "fas fa-exclamation-triangle");
+                return;
+            }
+
+            const val = parseInt(selected.value);
+            const isCorrect = (val === soal.correct);
+
+            if (isCorrect) {
+                studentData.berlatihScore += soal.bobot;
+            }
+
+            studentData.berlatihAnswers.push({
+                correct: isCorrect,
+                level: soal.lvlNum,
+                bobot: soal.bobot
+            });
+
+            if (studentData.currentBerlatihIndex < berlatihSoal.length - 1) {
+                studentData.currentBerlatihIndex++;
+                renderBerlatihSoal();
+            } else {
+                // Selesai Asesmen Berlatih, tampilkan Laporan
+                showReportView();
+            }
+        }
+
+        // ==========================================
+        // 8. LAPORAN HASIL BELAJAR PDF OTOMATIS
+        // ==========================================
+        function showReportDirect() {
+            if (studentData.berlatihAnswers.length === 0) {
+                showCustomModal("Informasi", "Selesaikan terlebih dahulu Menu BERLATIH untuk melihat laporan hasil belajar resmi!", "fas fa-info-circle");
+                return;
+            }
+            showReportView();
+        }
+
+        function showReportView() {
+            hideAllViews();
+            const el = document.getElementById('view-report');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+
+            document.getElementById('report-student-name').innerText = studentData.name || "Ahmad Zaki";
+            document.getElementById('report-student-class').innerText = studentData.class || "Kelas 1-A";
+            document.getElementById('report-print-date').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            document.getElementById('report-bermain-score').innerText = `${studentData.bermainScore} / 10`;
+            document.getElementById('report-berlatih-score').innerText = studentData.berlatihScore;
+
+            let predikat = "Sangat Baik";
+            if (studentData.berlatihScore >= 85) predikat = "Sangat Baik (A)";
+            else if (studentData.berlatihScore >= 70) predikat = "Baik (B)";
+            else predikat = "Cukup (C)";
+            document.getElementById('report-predikat').innerText = predikat;
+
+            // Analisis level
+            let l1Correct = true, l2Correct = true, l3Correct = true;
+            studentData.berlatihAnswers.forEach(ans => {
+                if (!ans.correct) {
+                    if (ans.level === 1) l1Correct = false;
+                    if (ans.level === 2) l2Correct = false;
+                    if (ans.level === 3) l3Correct = false;
+                }
+            });
+
+            document.getElementById('report-level1').innerText = l1Correct ? "Tuntas Sempurna" : "Perlu Penguatan";
+            document.getElementById('report-level2').innerText = l2Correct ? "Tuntas Sempurna" : "Perlu Penguatan";
+            document.getElementById('report-level3').innerText = l3Correct ? "Tuntas Sempurna" : "Perlu Penguatan";
+
+            document.getElementById('report-recommendation').innerText = `Ananda ${studentData.name || 'Siswa'} telah menyelesaikan seluruh tahapan Media Pembelajaran Interaktif Bilangan dengan skor akhir ${studentData.berlatihScore}/100 (${predikat}). Nilai-nilai Kurikulum Berbasis Cinta kepada sesama dan kepedulian terhadap kelestarian lingkungan Danau Limboto serta Teluk Tomini telah dijiwai dengan sangat baik. Pertahankan prestasi dan semangat belajarnya!`;
+        }
+
+        function downloadPDFReport() {
+            const element = document.getElementById('report-printable-area');
+            const opt = {
+                margin:       10,
+                filename:     `Laporan_MPI_Bilangan_${studentData.name || 'Siswa'}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Gunakan html2pdf jika tersedia, fallback ke window.print()
+            if (typeof html2pdf !== 'undefined') {
+                html2pdf().from(element).set(opt).save().catch(err => {
+                    console.log("PDF error, falling back to print", err);
+                    window.print();
+                });
+            } else {
+                window.print();
+            }
+        }
+    </script>
+</body>
+</html>
